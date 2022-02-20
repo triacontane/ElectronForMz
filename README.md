@@ -43,7 +43,8 @@ package.jsonに記載されたバージョンでよければ `npm -install` で�
 本リポジトリの`project`配下にRPGツクールMZのプロジェクトをコピーします。
 
 ### プラグインの有効化
-RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronForMz.js`を有効化します。
+RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronForMz.js`を有効化します。  
+<https://github.com/triacontane/ElectronForMz/blob/main/project/js/plugins/ElectronForMz.js>
 
 ## 実行
 ### 通常起動
@@ -56,13 +57,91 @@ RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronFor
 `npm debug`
 
 ## デプロイメント
-　指定したパスにデプロイメントします。パスを省略するとdistフォルダ配下に作成されます。
+指定したパスにデプロイメントします。パスを省略するとdistフォルダ配下に作成されます。  
 `node build-win.js C:\deploy/test`
 
 ## 本リポジトリの詳細解説
 ### main.js
+メインプロセスで動作するエントリポイントです。
+<https://github.com/triacontane/ElectronForMz/blob/main/main.js>
 
+```main.js
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
+```
+開発時にのみ表示される警告を消します。
 
+``` main.js
+mainWindow = new BrowserWindow({
+    width         : 816,
+    height        : 624,
+    useContentSize: true,
+    webPreferences: {
+        nodeIntegration: false,
+        preload: __dirname + '/preload.js'
+    },
+    icon : __dirname + '/project/icon/icon.png'
+});
+mainWindow.loadFile('project/index.html');
+```
+`width`および`height`は画面サイズです。ゲーム中で指定している画面サイズに合わせて指定します。
+`nodeIntegration`はレンダラープロセス（RPGツクールMZ自体が動作するプロセス）でNode.jsの機能を使用可能にするオプションです。  
+`false`にすることで`Utils.isNwjs`が`false`を返します。この関数で判定した分岐のなかにはNW.js特有の記述があることが多いので無効にします。
+`icon`はアイコンファイルのパスです。特に問題が無ければプロジェクト配下のものを指定すればOKです。  
+レンダラープロセスとしてプロジェクト配下の`index.html`を起動しています。  
+
+``` main.js
+Menu.setApplicationMenu(null);
+```
+メニューバーを設定します。コメントアウトするとElectronのデフォルトメニューバーが表示されます。自分で作り込んだものを指定すれば便利なデバッグツールになるかもしれません。
+
+``` main.js
+ipcMain.on('option-valid', event => {
+    event.reply('option-valid-reply', processArgv);
+});
+ipcMain.on('open-dev-tools', event => {
+    mainWindow.webContents.openDevTools();
+});
+```
+レンダラープロセスからの要求で引数の返却と開発者ツールの立ち上げを行います。
+
+### preload.js
+レンダラープロセスでNode.jsを禁止したので、必要なAPIだけをレンダラープロセスから参照可能にするためのコードです。グローバル変数`$electronModules`に格納しているのでご注意ください。
+<https://github.com/triacontane/ElectronForMz/blob/main/preload.js>
+
+```preload.js
+process.once('loaded', () => {
+    global.$electronModules = {};
+    global.$electronModules.ipcRenderer = electron.ipcRenderer;
+});
+```
+レンダラープロセスからElectronAPIの`ipcRenderer`を使用可能にします。
+
+### build-win.js
+Windows向けにビルドするためのファイルです。
+<https://github.com/triacontane/ElectronForMz/blob/main/build-win.js>
+
+詳細設定はドキュメントをご参照ください。
+<https://www.electron.build/configuration/configuration>
+
+```build-win.js
+config: {
+    appId: 'electron_for_mz',
+    win: {
+        icon: 'icon.png',
+        target: {
+            target: 'zip',
+            arch: ['x64']
+        }
+    },
+    asar: true,
+    directories: {
+        output: outputPath
+    }
+}
+```
+`icon`はアプリケーションやインストーラのアイコンに使われる画像です。256*256で用意します。icoファイルでもOKです。  
+`target`はデプロイメント方法です。`zip`は文字通りzipファイルを作成します。プラットフォームごとに様々な設定がありWindows向けだと`nsis`でインストーラ付きでデプロイメントできます。
+`asar`はデプロイメント時にパッケージングする設定です。暗号化ではないので絶対ではないですが、中身が見られにくくなります。
 
 ### 参考資料
 <https://qiita.com/saki-engineering/items/203892838e15b3dbd300>
