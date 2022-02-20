@@ -1,7 +1,7 @@
 /*=============================================================================
  build-win.js
 ----------------------------------------------------------------------------
- https://electronjs.org/docs/tutorial/first-app
+ Doc : https://www.electron.build/configuration/configuration
 ----------------------------------------------------------------------------
  Version
  1.0.0 2019/05/28 初版
@@ -12,23 +12,21 @@
 =============================================================================*/
 
 const builder = require('electron-builder');
+const outputPath = process.argv[2] || __dirname + '/dist';
 
-['ja'].forEach(language => {
-    builder.build({
-        config: {
-            appId: 'electron_for_mz',
-            win: {
-                icon: 'icon.png',
-                target: {
-                    target: 'nsis',
-                    arch: ['x64', 'ia32']
-                }
-            },
-            extraMetadata: {language: language},
-            asar: true,
-            directories: {
-                output: `C:\\deploy\\electron_for_mz\\${language}\\`
+builder.build({
+    config: {
+        appId: 'electron_for_mz',
+        win: {
+            icon: 'icon.png',
+            target: {
+                target: 'zip',
+                arch: ['x64']
             }
+        },
+        asar: true,
+        directories: {
+            output: outputPath
         }
-    });
+    }
 });
