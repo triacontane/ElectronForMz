@@ -4,7 +4,7 @@
  https://electronjs.org/docs/tutorial/first-app
 ----------------------------------------------------------------------------
  Version
- 1.0.0 2018/07/19 初版
+ 1.0.0 2022/02/20 初版
 ----------------------------------------------------------------------------
  [Blog]   : https://triacontane.blogspot.jp/
  [Twitter]: https://twitter.com/triacontane/
@@ -24,26 +24,26 @@ let mainWindow = null;
     function createWindow() {
         const path = require('path');
         const base = path.dirname(process.mainModule.filename);
-        const iconPath = path.join(base, 'icon.png');
+        const iconPath = path.join(base, 'project/icon/icon.png');
         const debug = process.argv.includes('debug');
 
         mainWindow = new BrowserWindow({
             title         : '',
-            width         : debug ? 1057 : 816,
+            width         : 816,
             height        : 624,
             useContentSize: true,
-            webPreferences: {nodeIntegration: true},
+            webPreferences: {nodeIntegration: false},
             icon : iconPath
         });
-        mainWindow.loadFile('index.html');
+        mainWindow.loadFile('project/index.html');
         if (debug) {
             mainWindow.webContents.openDevTools();
         }
         mainWindow.on('closed', () => {
             mainWindow = null;
         });
-        const menu = Menu.buildFromTemplate([]);
-        Menu.setApplicationMenu(menu);
+        // const menu = Menu.buildFromTemplate([]);
+        // Menu.setApplicationMenu(menu);
     }
 
     app.on('ready', createWindow);

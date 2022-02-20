@@ -104,3 +104,12 @@ dist
 .tern-port
 
 .idea
+
+project/audio
+project/effects
+project/data
+project/fonts
+project/img
+project/movies
+project/icon
+project/css

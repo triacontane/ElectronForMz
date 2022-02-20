@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx electron .",
     "debug": "npx electron . debug",
-    "deployWin": "node src/build-win.js"
+    "deployWin": "node build-win.js"
   },
   "repository": {
     "type": "git",
