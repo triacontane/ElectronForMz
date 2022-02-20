@@ -21,8 +21,8 @@ NW.jsと比べて以下のメリットがあります。
 - Electron v5.0.13
 - electron-builder v20.44.4
 
-## 下準備
-### リポジトリのチェックアウト
+## 準備
+### リポジトリのチェックアウト  
 <https://github.com/triacontane/ElectronForMz.git>
 
 以後のコマンドはすべてチェックアウトしたディレクトリで行います。
@@ -40,10 +40,10 @@ package.jsonに記載されたバージョンでよければ `npm -install` で�
 `npm install -D electron-builder`
 
 ### RPGツクールMZのプロジェクトをコピー
-本リポジトリの`project`配下にRPGツクールMZのプロジェクトをコピーします。
+本プロジェクトの`project`配下にRPGツクールMZのプロジェクトをコピーします。
 
 ### プラグインの有効化
-RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronForMz.js`を有効化します。  
+RPGツクールMZ本体から本プロジェクト同梱プラグイン`ElectronForMz.js`を有効化します。  
 <https://github.com/triacontane/ElectronForMz/blob/main/project/js/plugins/ElectronForMz.js>
 
 ## 実行
@@ -60,7 +60,7 @@ RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronFor
 指定したパスにデプロイメントします。パスを省略するとdistフォルダ配下に作成されます。  
 `node build-win.js C:\deploy/test`
 
-## 本リポジトリの詳細解説
+## 本プロジェクトの詳細解説
 ### main.js
 メインプロセスで動作するエントリポイントです。
 <https://github.com/triacontane/ElectronForMz/blob/main/main.js>
@@ -87,12 +87,13 @@ mainWindow.loadFile('project/index.html');
 `nodeIntegration`はレンダラープロセス（RPGツクールMZ自体が動作するプロセス）でNode.jsの機能を使用可能にするオプションです。  
 `false`にすることで`Utils.isNwjs`が`false`を返します。この関数で判定した分岐のなかにはNW.js特有の記述があることが多いので無効にします。
 `icon`はアイコンファイルのパスです。特に問題が無ければプロジェクト配下のものを指定すればOKです。  
-レンダラープロセスとしてプロジェクト配下の`index.html`を起動しています。  
+設定を定義したら、最後にレンダラープロセスとしてプロジェクト配下の`index.html`を起動します。  
 
 ``` main.js
 Menu.setApplicationMenu(null);
 ```
-メニューバーを設定します。コメントアウトするとElectronのデフォルトメニューバーが表示されます。自分で作り込んだものを指定すれば便利なデバッグツールになるかもしれません。
+メニューバーを設定します。RPGツクールMZではもともとメニューバーを表示していないので明示的にnullを指定しています。  
+コメントアウトするとElectronのデフォルトメニューバーが表示されます。自分で作り込んだものを指定すれば便利なデバッグツールになるかもしれません。
 
 ``` main.js
 ipcMain.on('option-valid', event => {
@@ -116,12 +117,45 @@ process.once('loaded', () => {
 ```
 レンダラープロセスからElectronAPIの`ipcRenderer`を使用可能にします。
 
+### ElectronForMz.js
+
+ElectronでRPGツクールMZを動かすために、MZ側で有効にする必要があるプラグインです。本プロジェクトの中核になるはずでしたが、思ったほど必要な記述はなかったです。
+
+<https://github.com/triacontane/ElectronForMz/blob/main/project/js/plugins/ElectronForMz.js>
+
+```ElectronForMz.js
+if (typeof $electronModules === 'undefined') {
+    return;
+}
+```
+ブラウザ経由の起動の場合はプラグインを無効化します。`$electronModules`は`preload.js`で定義しています。
+
+```ElectronForMz.js
+const ipcRenderer = $electronModules.ipcRenderer;
+let options = '';
+ipcRenderer.on('option-valid-reply', (event, arg) => {
+    options = arg;
+});
+ipcRenderer.send('option-valid');
+```
+メインプロセスから引数を引っ張ってきます。NW.js用のパラメータが使えないのでその代わりです。
+
+```ElectronForMz.js
+const _SceneManager_showDevTools = SceneManager.showDevTools;
+SceneManager.showDevTools = function() {
+    _SceneManager_showDevTools.apply(this, arguments);
+    if (Utils.isOptionValid('test')) {
+        ipcRenderer.send('open-dev-tools');
+    }
+};
+```
+メインプロセスを呼んで開発者ツールを立ち上げてもらいます。  
+
+必要な記述はこれだけでした。RPGツクールMZのコアスクリプトは、意外とNW.jsに対する依存度が低いようです。
+
 ### build-win.js
 Windows向けにビルドするためのファイルです。
 <https://github.com/triacontane/ElectronForMz/blob/main/build-win.js>
-
-詳細設定はドキュメントをご参照ください。
-<https://www.electron.build/configuration/configuration>
 
 ```build-win.js
 config: {
@@ -143,5 +177,8 @@ config: {
 `target`はデプロイメント方法です。`zip`は文字通りzipファイルを作成します。プラットフォームごとに様々な設定がありWindows向けだと`nsis`でインストーラ付きでデプロイメントできます。
 `asar`はデプロイメント時にパッケージングする設定です。暗号化ではないので絶対ではないですが、中身が見られにくくなります。
 
-### 参考資料
+詳細設定はドキュメントをご参照ください。
+<https://www.electron.build/configuration/configuration>
+
+## 参考資料
 <https://qiita.com/saki-engineering/items/203892838e15b3dbd300>
