@@ -6,6 +6,7 @@
  http://opensource.org/licenses/mit-license.php
 ----------------------------------------------------------------------------
  Version
+ 1.1.0 2023/06/01 Electron v20.3.9およびコアスクリプトv1.6.0に対応
  1.0.0 2022/02/20 初版
 ----------------------------------------------------------------------------
  [Blog]   : https://triacontane.blogspot.jp/
@@ -33,16 +34,19 @@
 (() => {
     'use strict';
 
-    if (typeof $electronModules === 'undefined') {
+    Utils.isElectron = function () {
+        return !!window.electronAPI;
+    }
+
+    if (!Utils.isElectron()) {
         return;
     }
 
-    const ipcRenderer = $electronModules.ipcRenderer;
     let options = '';
-    ipcRenderer.on('option-valid-reply', (event, arg) => {
+    window.electronAPI.optionValid();
+    window.electronAPI.optionValidReply((event, arg) => {
         options = arg;
     });
-    ipcRenderer.send('option-valid');
 
     const _Utils_isOptionValid = Utils.isOptionValid;
     Utils.isOptionValid = function(name) {
@@ -53,7 +57,16 @@
     SceneManager.showDevTools = function() {
         _SceneManager_showDevTools.apply(this, arguments);
         if (Utils.isOptionValid('test')) {
-            ipcRenderer.send('open-dev-tools');
+            window.electronAPI.openDevTools();
+        }
+    };
+
+    const _SceneManager_terminate = SceneManager.terminate;
+    SceneManager.terminate = function() {
+        if (Utils.isElectron()) {
+            window.close();
+        } else {
+            _SceneManager_terminate.apply(this, arguments);
         }
     };
 })();

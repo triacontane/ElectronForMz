@@ -2,6 +2,7 @@
  main.js
 ----------------------------------------------------------------------------
  Version
+ 1.1.0 2023/06/01 Electron v20.3.9およびコアスクリプトv1.6.0に対応
  1.0.0 2022/02/20 初版
 ----------------------------------------------------------------------------
  [Blog]   : https://triacontane.blogspot.jp/
@@ -44,10 +45,13 @@ let mainWindow = null;
     }
     app.on('ready', createWindow);
 
-    ipcMain.on('option-valid', event => {
-        event.reply('option-valid-reply', processArgv);
+    ipcMain.handle('option-valid', event => {
+        mainWindow.webContents.send('option-valid-reply', processArgv);
     });
-    ipcMain.on('open-dev-tools', event => {
+    ipcMain.handle('open-dev-tools', event => {
         mainWindow.webContents.openDevTools();
+    });
+    ipcMain.handle('full-screen', (event, value) => {
+        mainWindow.setFullScreen(value);
     });
 })();
