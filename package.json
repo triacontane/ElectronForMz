@@ -1,6 +1,6 @@
 {
   "name": "electron-for-mz",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Electron for RPG Maker MZ",
   "main": "main.js",
   "scripts": {
