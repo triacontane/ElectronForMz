@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/triacontane/ElectronForMz/blob/main/README.md",
   "devDependencies": {
-    "electron": "20.3.9",
+    "electron": "^25.0.0",
     "electron-builder": "^20.44.4"
   }
 }

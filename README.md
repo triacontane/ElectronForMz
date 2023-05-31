@@ -26,7 +26,7 @@ NW.jsと比べて以下のメリットがあります。
 - OS Windows11
 - Node.js v18.16.0
 - npm v9.5.1
-- Electron v20.3.9
+- Electron v25.0.0
 - electron-builder v20.44.4
 - RPGツクールMZ コアスクリプト v1.6.0
 
@@ -287,5 +287,5 @@ Graphics._defaultStretchMode = function() {
 今回の調査で（Node.jsの初歩的な知見があれば）わりと簡単にElectronでのデプロイメントまで出来てしまうことが分かったので、今後はソフトウェアエンジニア以外でも気軽にデプロイメントできるようやり方を考えていきたいと思います。
 
 ## 参考資料
-<https://www.electronjs.org/ja/docs/latest/>
+<https://www.electronjs.org/ja/docs/latest/>  
 <https://qiita.com/saki-engineering/items/203892838e15b3dbd300>
