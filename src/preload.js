@@ -15,8 +15,9 @@ const { contextBridge, ipcRenderer } = require('electron')
 process.once('loaded', () => {
     contextBridge.exposeInMainWorld('electronAPI', {
         optionValid: () => ipcRenderer.invoke('option-valid'),
-        optionValidReply: (callBack) => ipcRenderer.on('option-valid-reply', callBack),
+        optionValidReply: callBack => ipcRenderer.on('option-valid-reply', callBack),
         openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
-        fullScreen: (value) => ipcRenderer.invoke('full-screen', value)
+        fullScreen: value => ipcRenderer.invoke('full-screen', value),
+        reloadPage: () => ipcRenderer.invoke('reload-page')
     });
 });

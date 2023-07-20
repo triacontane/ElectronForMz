@@ -1,25 +1,27 @@
 {
-  "name": "electron-for-mz",
-  "version": "1.1.1",
-  "description": "Electron for RPG Maker MZ",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "test": "electron . test",
-    "debug": "electron . test,debug",
-    "deployWin": "node build-win.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/triacontane/ElectronForMz.git"
-  },
-  "author": "Triacontane",
-  "bugs": {
-    "url": "https://github.com/triacontane/ElectronForMz/issues"
-  },
-  "homepage": "https://github.com/triacontane/ElectronForMz/blob/main/README.md",
-  "devDependencies": {
-    "electron": "^25.0.0",
-    "electron-builder": "^20.44.4"
-  }
+    "name": "electron-for-mz",
+    "version": "1.1.1",
+    "description": "Electron for RPG Maker MZ",
+    "main": "src/main.js",
+    "scripts": {
+        "start": "electron .",
+        "test": "electron . test",
+        "debug": "electron . test,debug",
+        "deploy": "cross-env MODE=production electron-builder build --config .electron-builder.config.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/triacontane/ElectronForMz.git"
+    },
+    "author": "Triacontane",
+    "bugs": {
+        "url": "https://github.com/triacontane/ElectronForMz/issues"
+    },
+    "homepage": "https://github.com/triacontane/ElectronForMz/blob/main/README.md",
+    "devDependencies": {
+        "cross-env": "^7.0.0",
+        "electron": "^25.3.0",
+        "electron-builder": "^24.4.0",
+        "asarmor": "^2.0.0"
+    }
 }
