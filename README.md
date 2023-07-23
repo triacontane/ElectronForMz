@@ -10,6 +10,9 @@ https://note.com/cursed_steven/n/ncf1917f0c259
 ElectronForMzを1.1.0にアップデートし、使っているElectronとコアスクリプトをアップデートしました。
 それに伴い、使っている記述（主にプロセス間通信）をモダンな記述に変えています。
 
+### 2023/07/23追記
+ElectronForMzを1.2.0にアップデートし、Mac対応のほか全体的な見直しを実施しました。
+
 ## Electronとは
 Electronとは、NW.jsと同様にクロスプラットフォームで動作するデスクトップアプリケーションのフレームワークです。
 NW.jsと比べて以下のメリットがあります。
@@ -26,8 +29,8 @@ NW.jsと比べて以下のメリットがあります。
 - OS Windows11
 - Node.js v18.16.0
 - npm v9.5.1
-- Electron v25.0.0
-- electron-builder v20.44.4
+- Electron v25.3.0
+- electron-builder v24.4.0
 - RPGツクールMZ コアスクリプト v1.6.0
 
 ## 準備
