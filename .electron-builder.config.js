@@ -1,5 +1,5 @@
 /*=============================================================================
- build-win.js
+ .electron-builder.config.js
 ----------------------------------------------------------------------------
  Doc : https://www.electron.build/configuration/configuration
 ----------------------------------------------------------------------------
@@ -11,22 +11,26 @@
  [GitHub] : https://github.com/triacontane/
 =============================================================================*/
 
-const builder = require('electron-builder');
-const outputPath = process.argv[2] || __dirname + '/dist';
-
-builder.build({
-    config: {
-        appId: 'electron_for_mz',
-        win: {
-            icon: 'icon.png',
-            target: {
-                target: 'zip',
-                arch: ['x64']
-            }
-        },
+module.exports = async function () {
+    return {
+        appId: 'com.rpgmaker.game',
+        icon: 'icon.png',
         asar: true,
+        afterPack: './scripts/myAfterPackHook.js',
         directories: {
-            output: outputPath
+            output: 'dist'
+        },
+
+        win: {
+            target: 'zip'
+        },
+        mac: {
+            target: 'dmg',
+            category: 'Games'
+        },
+        linux: {
+            target: 'AppImage',
+            category: 'Game'
         }
-    }
-});
+    };
+};

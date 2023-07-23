@@ -53,6 +53,15 @@
         return _Utils_isOptionValid.apply(this, arguments) || options.split(',').includes(name);
     };
 
+    const _SceneManager_reloadGame = SceneManager.reloadGame;
+    SceneManager.reloadGame = function () {
+        if (Utils.isElectron()) {
+            window.electronAPI.reloadPage();
+        } else {
+            _SceneManager_reloadGame.apply(this, arguments);
+        }
+    };
+
     const _SceneManager_showDevTools = SceneManager.showDevTools;
     SceneManager.showDevTools = function() {
         _SceneManager_showDevTools.apply(this, arguments);

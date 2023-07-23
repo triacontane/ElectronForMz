@@ -1,31 +1,8 @@
-node_modules/
+node_modules
 
 dist
 
 .idea
 
-project/audio
-project/effects
-project/data
-project/fonts
-project/img
-project/movies
-project/icon
-project/css
-project/js/libs/effekseer.wasm
-project/js/libs/effekseer.min.js
-project/game.rmmzproject
-project/index.html
-project/js/libs/localforage.min.js
-project/js/main.js
-project/package.json
-project/js/libs/pako.min.js
-project/js/libs/pixi.js
-project/js/plugins.js
-project/js/rmmz_core.js
-project/js/rmmz_managers.js
-project/js/rmmz_objects.js
-project/js/rmmz_scenes.js
-project/js/rmmz_sprites.js
-project/js/rmmz_windows.js
-project/js/libs/vorbisdecoder.js
+project
+!project/js/plugins
