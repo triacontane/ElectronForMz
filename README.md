@@ -13,6 +13,12 @@ ElectronForMzを1.1.0にアップデートし、使っているElectronとコア
 ### 2023/07/23追記
 ElectronForMzを1.2.0にアップデートし、Mac対応のほか全体的な見直しを実施しました。
 
+### 2023/07/24追記
+GitHub Actionsによる自動ビルドを導入しました。
+forkしたリポジトリで開発を行うと、push時に自動で成果物が自動でビルドされます。
+以下の手順でトークンの設定が必要です。
+https://github.com/triacontane/ElectronForMz/pull/5
+
 ## Electronとは
 Electronとは、NW.jsと同様にクロスプラットフォームで動作するデスクトップアプリケーションのフレームワークです。
 NW.jsと比べて以下のメリットがあります。
