@@ -37,7 +37,8 @@ let browserWindow = null;
                 nodeIntegration: false,
                 contextIsolation: true,
                 sandbox: false,
-                preload: join(app.getAppPath(), 'src/preload.js')
+                disableContextMenu: true,
+                preload: join(app.getAppPath(), 'src/preload.js'),
             },
             icon: join(app.getAppPath(), 'project/icon/icon.png')
         });
