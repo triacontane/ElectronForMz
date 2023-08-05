@@ -307,6 +307,9 @@ Graphics._defaultStretchMode = function() {
 };
 ```
 
+## CI/CDの導入
+以下で解説します。
+<https://github.com/triacontane/ElectronForMz/blob/main/README_CICD.md>
 
 ## おわりに
 今回の調査で（Node.jsの初歩的な知見があれば）わりと簡単にElectronでのデプロイメントまで出来てしまうことが分かったので、今後はソフトウェアエンジニア以外でも気軽にデプロイメントできるようやり方を考えていきたいと思います。
