@@ -308,7 +308,7 @@ Graphics._defaultStretchMode = function() {
 ```
 
 ## CI/CDの導入
-以下で解説します。
+以下で解説します。  
 <https://github.com/triacontane/ElectronForMz/blob/main/README_CICD.md>
 
 ## おわりに
