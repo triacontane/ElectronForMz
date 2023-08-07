@@ -22,7 +22,8 @@ let browserWindow = null;
 
     process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
     const {app, BrowserWindow, Menu, ipcMain, shell} = require('electron');
-    const {join, resolve} = require('path');
+    const {join} = require('path');
+    const {format} = require('url');
     const {platform} = require('node:process');
     const processArgv = process.argv[2] || '';
 
@@ -40,7 +41,8 @@ let browserWindow = null;
                 nodeIntegration: true, // Must be enabled for Asarmor
                 contextIsolation: false, // Must be disabled for Asarmor
                 sandbox: false,
-                preload: join(app.getAppPath(), 'src/preload.js')
+                disableContextMenu: true,
+                preload: join(app.getAppPath(), 'src/preload.js'),
             },
             icon: join(app.getAppPath(), 'project/icon/icon.png')
         });
@@ -66,7 +68,13 @@ let browserWindow = null;
 
         Menu.setApplicationMenu(null);
 
-        await browserWindow.loadURL(resolve(join(app.getAppPath(), 'project/index.html')));
+        const indexURL = format({
+            protocol: 'file',
+            slashes: true,
+            pathname: join(app.getAppPath(), 'project', 'index.html')
+        });
+
+        await browserWindow.loadURL(indexURL);
 
         return browserWindow;
     }

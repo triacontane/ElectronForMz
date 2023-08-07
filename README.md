@@ -1,17 +1,6 @@
 こんにちは！
 NW.jsで動作しているRPGツクールMZですが、ちょっと事情があってエンジンをElectronに移行できないかを調査、検討してみました。
-結果、思ったよりも簡単だったので過程と成果物を共有します。現在(2022-02-20)はWindows環境のみ調査済みです。Macは動作、検証環境がないので調査していませんが、原理的には対応は容易なはずなので有志に期待しましょう。
-
-### 2023/04/28追記
-以下の記事にてMac版の対応方法が公開されました！　ありがとうございます。
-https://note.com/cursed_steven/n/ncf1917f0c259
-
-### 2023/06/01追記
-ElectronForMzを1.1.0にアップデートし、使っているElectronとコアスクリプトをアップデートしました。
-それに伴い、使っている記述（主にプロセス間通信）をモダンな記述に変えています。
-
-### 2023/07/23追記
-ElectronForMzを1.2.0にアップデートし、Mac対応のほか全体的な見直しを実施しました。
+結果、思ったよりも簡単だったので過程と成果物を共有します。
 
 ## Electronとは
 Electronとは、NW.jsと同様にクロスプラットフォームで動作するデスクトップアプリケーションのフレームワークです。
@@ -19,7 +8,6 @@ NW.jsと比べて以下のメリットがあります。
 
 - 将来的に見て安心(NW.jsには今後OSのアップデートに付いていけるか不安。特にMac)
 - パッケージングやインストーラを使ったデプロイメントが可能(electron-builderを使用)
-- 本体v1.4.3時点で発生しているNW.jsのプロセスが終了後も残り続けてしまう問題を回避できる
 
 ## 対象読者
 - Node.jsのインストールとnpmコマンドが実行できるひと
@@ -31,7 +19,7 @@ NW.jsと比べて以下のメリットがあります。
 - npm v9.5.1
 - Electron v25.3.0
 - electron-builder v24.4.0
-- RPGツクールMZ コアスクリプト v1.6.0
+- RPGツクールMZ コアスクリプト v1.7.0
 
 ## 準備
 まず、Electronの動作環境を整える必要があります。今回は私が調査用に作成したプロジェクトをもとに解説します。以後、本プロジェクトと呼称します。
@@ -66,17 +54,16 @@ RPGツクールMZ本体から本リポジトリ同梱プラグイン`ElectronFor
 とりあえず動かしてみるだけなら解説は不要なので、まずやり方だけ共有します。
 
 ### 通常起動
-`npm start`
+`npm run start`
 
 ### テストプレー
-`npm test`
+`npm run test`
 
 ### テストプレー(開発ツール起動)
-`npm debug`
+`npm run debug`
 
 ### デプロイメント
-指定したパスにデプロイメントします。パスを省略するとdistフォルダ配下に作成されます。  
-`node build-win.js C:\deploy/test`
+`npm run deploy`
 
 ## 本プロジェクトの詳細解説
 ### main.js
@@ -90,15 +77,18 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
 開発時にのみ表示される警告を消します。
 
 ``` main.js
-mainWindow = new BrowserWindow({
-    width         : 816,
-    height        : 624,
+browserWindow = new BrowserWindow({
+    width: 816,
+    height: 624,
+    show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
     useContentSize: true,
     webPreferences: {
         nodeIntegration: false,
-        preload: __dirname + '/preload.js'
+        contextIsolation: true,
+        sandbox: false,
+        preload: join(app.getAppPath(), 'src/preload.js')
     },
-    icon : __dirname + '/project/icon/icon.png'
+    icon: join(app.getAppPath(), 'project/icon/icon.png')
 });
 ```
 `width`および`height`は画面サイズです。ゲーム中で指定している画面サイズに合わせて指定します。
@@ -109,7 +99,13 @@ mainWindow = new BrowserWindow({
 `icon`はアイコンファイルのパスです。特に問題が無ければプロジェクト配下のものを指定すればOKです。
 
 ``` main.js
-mainWindow.loadFile('project/index.html');
+const indexURL = format({
+    protocol: 'file',
+    slashes: true,
+    pathname: join(app.getAppPath(), 'project', 'index.html')
+});
+
+await browserWindow.loadURL(indexURL);
 ```
 設定を定義したら、レンダラープロセスをプロジェクト配下の`index.html`を指定して起動します。
 
@@ -129,6 +125,9 @@ ipcMain.handle('open-dev-tools', event => {
 ipcMain.handle('full-screen', (event, value) => {
     mainWindow.setFullScreen(value);
 });
+ipcMain.handle('reload-page', event => {
+    browserWindow.webContents.reloadIgnoringCache();
+});
 ```
 レンダラープロセスからの要求で引数の返却と開発者ツールの立ち上げを行います。
 また、プラグインでプロセス間通信を使用するサンプルとして、強制的にフルスクリーン化する処理も定義しています。
@@ -144,9 +143,10 @@ https://www.electronjs.org/ja/docs/latest/tutorial/ipc
 process.once('loaded', () => {
     contextBridge.exposeInMainWorld('electronAPI', {
         optionValid: () => ipcRenderer.invoke('option-valid'),
-        optionValidReply: (callBack) => ipcRenderer.on('option-valid-reply', callBack),
+        optionValidReply: callBack => ipcRenderer.on('option-valid-reply', callBack),
         openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
-        fullScreen: (value) => ipcRenderer.invoke('full-screen', value)
+        fullScreen: value => ipcRenderer.invoke('full-screen', value),
+        reloadPage: () => ipcRenderer.invoke('reload-page')
     });
 });
 ```
@@ -180,6 +180,18 @@ window.electronAPI.optionValidReply((event, arg) => {
 メインプロセスの`optionValid`を呼んで、呼び出し先から`optionValidReply`が逆に呼ばれます。
 
 ```ElectronForMz.js
+const _SceneManager_reloadGame = SceneManager.reloadGame;
+SceneManager.reloadGame = function () {
+    if (Utils.isElectron()) {
+        window.electronAPI.reloadPage();
+    } else {
+        _SceneManager_reloadGame.apply(this, arguments);
+    }
+};
+```
+F5キー等でゲームをリロードする場合の処理は、Electron専用の処理が必要になります。
+
+```ElectronForMz.js
 const _SceneManager_showDevTools = SceneManager.showDevTools;
 SceneManager.showDevTools = function() {
     _SceneManager_showDevTools.apply(this, arguments);
@@ -205,30 +217,40 @@ RPGツクールMZ コアスクリプトのアップデートにより本記述�
 
 必要な記述はこれだけでした。RPGツクールMZのコアスクリプトは、意外とNW.jsに対する依存度が低いようです。
 
-### build-win.js
-Windows向けにビルドするためのファイルです。
+### .electron-builder.config.js
+ビルドするためのファイルです。
 
-<https://github.com/triacontane/ElectronForMz/blob/main/build-win.js>
+<https://github.com/triacontane/ElectronForMz/blob/main/.electron-builder.config.js>
 
-```build-win.js
-config: {
-    appId: 'electron_for_mz',
-    win: {
-        icon: 'icon.png',
-        target: {
-            target: 'zip',
-            arch: ['x64']
-        }
-    },
-    asar: true,
-    directories: {
-        output: outputPath
-    }
+```.electron-builder.config.js
+appId: 'com.rpgmaker.game',
+asar: true,
+afterPack: './scripts/myAfterPackHook.js',
+directories: {
+    output: 'dist'
+},
+
+win: {
+    target: 'zip',
+    icon: 'icon-win.png'
+},
+mac: {
+    target: 'dmg',
+    category: 'Games',
+    icon: 'icon-mac.png'
+},
+linux: {
+    target: 'AppImage',
+    category: 'Game',
+    icon: 'icon-win.png'
 }
 ```
+`win`, `mac`, `linux`はそれぞれのプラットフォーム向けの設定です。  
 `icon`はアプリケーションやインストーラのアイコンに使われる画像です。256*256で用意します。icoファイルでもOKです。  
 `target`はデプロイメント方法です。`zip`は文字通りzipファイルを作成します。プラットフォームごとに様々な設定がありWindows向けだと`nsis`でインストーラ付きでデプロイメントできます。  
-`asar`はデプロイメント時にパッケージングする設定です。有効にすると各種リソースが`app.asar`というファイルにまとめられます。暗号化ではないので絶対ではないですが、中身が見られにくくなります。
+`asar`はデプロイメント時にパッケージングする設定です。有効にすると各種リソースが`app.asar`というファイルにまとめられます。暗号化ではないので絶対ではないですが、中身が見られにくくなります。  
+`output`は出力ディレクトリです。`dist`にすると`dist/win-unpacked`にWindows向けの未パッケージングファイル一式が出力されます。  
+`afterPack`はパッケージング後に実行するスクリプトです。`scripts/myAfterPackHook.js`に記述しています。  
 
 詳細設定はドキュメントをご参照ください。
 
@@ -285,6 +307,9 @@ Graphics._defaultStretchMode = function() {
 };
 ```
 
+## CI/CDの導入
+以下で解説します。  
+<https://github.com/triacontane/ElectronForMz/blob/main/README_CICD.md>
 
 ## おわりに
 今回の調査で（Node.jsの初歩的な知見があれば）わりと簡単にElectronでのデプロイメントまで出来てしまうことが分かったので、今後はソフトウェアエンジニア以外でも気軽にデプロイメントできるようやり方を考えていきたいと思います。

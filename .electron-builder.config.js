@@ -15,7 +15,6 @@
 module.exports = async function () {
     return {
         appId: 'com.rpgmaker.game',
-        icon: 'icon.png',
         asar: true,
         beforePack: './scripts/myBeforePackHook.js',
         afterPack: './scripts/myAfterPackHook.js',
@@ -24,15 +23,18 @@ module.exports = async function () {
         },
 
         win: {
-            target: 'zip'
+            target: 'zip',
+            icon: 'icon-win.png'
         },
         mac: {
             target: 'dmg',
-            category: 'Games'
+            category: 'Games',
+            icon: 'icon-mac.png'
         },
         linux: {
             target: 'AppImage',
-            category: 'Game'
+            category: 'Game',
+            icon: 'icon-win.png'
         }
     };
 };
