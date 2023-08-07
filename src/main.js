@@ -11,6 +11,10 @@
  [GitHub] : https://github.com/triacontane/
 =============================================================================*/
 
+import {hookNodeModulesAsar} from 'asarmor';
+
+hookNodeModulesAsar();
+
 let browserWindow = null;
 
 (() => {
@@ -34,8 +38,8 @@ let browserWindow = null;
             show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
             useContentSize: true,
             webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: true,
+                nodeIntegration: true, // Must be enabled for Asarmor
+                contextIsolation: false, // Must be disabled for Asarmor
                 sandbox: false,
                 disableContextMenu: true,
                 preload: join(app.getAppPath(), 'src/preload.js'),
@@ -55,6 +59,12 @@ let browserWindow = null;
             shell.openExternal(details.url);
             return {action: 'deny'};
         });
+
+        // Load encrypted renderer process
+        await browserWindow.webContents.executeJavaScript(`(function () {
+            require('renderer.node');
+            require('renderer.js');
+        })();`);
 
         Menu.setApplicationMenu(null);
 
@@ -105,13 +115,37 @@ let browserWindow = null;
         }
     });
 
+    module.exports = function bootstrap(k) {
+        // sanity check
+        if (!Array.isArray(k) || k.length === 0) {
+            throw new Error('Failed to bootstrap application.');
+        }
+
+        // key should be valid at this point, but you can access it here to perform additional checks.
+        console.log('decryption key: ' + k);
+
+        // start the app
+        if (!process.env.ELECTRON_RUN_AS_NODE) {
+            app.whenReady()
+                .then(() => {
+                    restoreOrCreateWindow();
+                    app.on('activate', () => {
+                        if (browserWindow === null) restoreOrCreateWindow();
+                    });
+                })
+                .catch(e => console.error('Failed create window:', e));
+        } else {
+            console.error('failed to bootstrap main process');
+        }
+    };
+
     /**
      * Create the application window when the background process is ready.
-     */
+
     app.whenReady()
         .then(restoreOrCreateWindow)
         .catch(e => console.error('Failed create window:', e));
-
+     */
     ipcMain.handle('option-valid', event => {
         browserWindow.webContents.send('option-valid-reply', processArgv);
     });

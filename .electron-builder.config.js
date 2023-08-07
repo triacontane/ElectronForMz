@@ -16,6 +16,7 @@ module.exports = async function () {
     return {
         appId: 'com.rpgmaker.game',
         asar: true,
+        beforePack: './scripts/myBeforePackHook.js',
         afterPack: './scripts/myAfterPackHook.js',
         directories: {
             output: 'dist'
