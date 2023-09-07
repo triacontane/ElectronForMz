@@ -23,17 +23,17 @@ module.exports = async function () {
 
         win: {
             target: 'zip',
-            icon: 'icon-win.png'
+            icon: 'project/icon/icon-electron.png'
         },
         mac: {
             target: 'dmg',
             category: 'Games',
-            icon: 'icon-mac.png'
+            icon: 'project/icon/icon-electron-mac.png'
         },
         linux: {
             target: 'AppImage',
             category: 'Game',
-            icon: 'icon-win.png'
+            icon: 'project/icon/icon-electron.png'
         }
     };
 };

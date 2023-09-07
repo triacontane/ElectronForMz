@@ -4,5 +4,10 @@ dist
 
 .idea
 
-project
+project/*
+!project/icon
+project/icon/icon.png
+!project/js
+project/js/*.js
+project/js/libs
 !project/js/plugins

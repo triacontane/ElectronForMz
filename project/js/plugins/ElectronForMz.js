@@ -35,6 +35,16 @@
 (() => {
     'use strict';
 
+    const _Main_isPathRandomized = Main.isPathRandomized;
+    Main.isPathRandomized = function () {
+        // [Note] We cannot save the game properly when Gatekeeper Path Randomization is in effect.
+        if (Utils.isElectron()) {
+            return __filename.startsWith('/private/var');
+        } else {
+            return _Main_isPathRandomized.apply(this, arguments);
+        }
+    }
+
     Utils.isElectron = function () {
         return !!window.electronAPI;
     }
@@ -52,6 +62,19 @@
     const _Utils_isOptionValid = Utils.isOptionValid;
     Utils.isOptionValid = function(name) {
         return _Utils_isOptionValid.apply(this, arguments) || options.split(',').includes(name);
+    };
+
+    const _StorageManager_fileDirectoryPath = StorageManager.fileDirectoryPath;
+    StorageManager.localFileDirectoryPath = function () {
+        const path = require('path');
+        if (Utils.isElectron()) {
+            const base = path.dirname(__filename);
+            return Utils.isOptionValid('test')
+                ? path.join(base, 'save/')
+                : path.join(base, '../../save/');
+        } else {
+            return _StorageManager_fileDirectoryPath.apply(this, arguments);
+        }
     };
 
     const _SceneManager_reloadGame = SceneManager.reloadGame;
